@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CameraControl : MonoBehaviour {
@@ -19,12 +21,31 @@ public class CameraControl : MonoBehaviour {
         followCamera.Priority = 10;
     }
 
+    private void Update() {
+        if (isCelebrating) {
+            ////The rotation of the FreeLook camera
+            freeLookCamera.m_XAxis.Value += rotationSpeed * Time.deltaTime;
+        }
+        else {
+            freeLookCamera.m_XAxis.Value = freeLookCamera.m_XAxis.Value;
+        }
+    }
+
     public void StartCelebration() {
+        isCelebrating = true;
         //The FreeLook camera is activated
         freeLookCamera.Priority = 10;
         //The Virtual camera is deactivated
         followCamera.Priority = 0;  
-        //The rotation of the FreeLook camera
-        freeLookCamera.m_XAxis.Value += rotationSpeed * Time.deltaTime;
+    }
+    
+    
+
+    public void StopCelebration() {
+        isCelebrating = false;
+        //The FreeLook camera is deactivated
+        freeLookCamera.Priority = 0;
+        //The Virtual camera is activated
+        followCamera.Priority = 10;
     }
 }

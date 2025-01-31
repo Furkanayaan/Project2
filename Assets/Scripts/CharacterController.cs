@@ -14,6 +14,9 @@ public class CharacterController : MonoBehaviour {
     private bool _bFailed;
     private Animator anim;
     private bool _bFinished;
+    public float _celebrateTimer;
+    public bool _bOpeningSuccessUI= false;
+    public bool bStart = false;
 
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
@@ -30,21 +33,31 @@ public class CharacterController : MonoBehaviour {
     
 
     private void Update() {
+        if (!bStart && Input.GetMouseButtonDown(0)) {
+            bStart = true;
+            anim.SetTrigger("Run");
+        }
+        if(!bStart) return;
         if (!_isMoving) {
-            CameraControl.I.StartCelebration();
+            if (!_bOpeningSuccessUI) {
+                _celebrateTimer += Time.deltaTime;
+                if (_celebrateTimer >= 5f) {
+                    UIManager.I.OpenSuccessUI();
+                    CameraControl.I.StopCelebration();
+                    _celebrateTimer = 0f;
+                    _bOpeningSuccessUI = true;
+                }
+            }
             return;
         }
-        if (transform.position.y <= -2f) {
-            UIManager.I.OpenFailedUI();
-            _rigidbody.useGravity = false;
-            _rigidbody.velocity = Vector3.zero;
-            anim.SetTrigger("Stop");
-            _bFailed = true;
-            return;
-        }
+        CharacterMove();
+    }
+
+    public void CharacterMove() {
+        if(_bFailed || !_isMoving) return;
         
         //Increase the character's speed each time it passes a platform.
-        Vector3 targetPosition = _rigidbody.position + Vector3.forward * (_forwardSpeed + currentPlatformIndex* 0.1f) * Time.deltaTime;
+        Vector3 targetPosition = _rigidbody.position + Vector3.forward * (_forwardSpeed + currentPlatformIndex * GameManager.Level/20f) * Time.deltaTime;
         float targetXPosition = 0f;
 
         if (PlatformManager.I.GetCurrentPlatform(currentPlatformIndex) != null && PlatformManager.I.GetCurrentPlatform(currentPlatformIndex).CompareTag("FinishPlatform")) {
@@ -61,20 +74,53 @@ public class CharacterController : MonoBehaviour {
         }
         
 
-        float smoothedX = Mathf.Lerp(_rigidbody.position.x, targetXPosition, Time.deltaTime * 3f);
+        float smoothedX = Mathf.Lerp(_rigidbody.position.x, targetXPosition, Time.deltaTime * 5f);
         _rigidbody.MovePosition(new Vector3(smoothedX, _rigidbody.position.y, targetPosition.z));
         
+        //The falling of the character
+        if (transform.position.y <= -2f && !_bFailed) {
+            FailLevel();
+        }
+    }
+
+    public void FailLevel() {
+        UIManager.I.OpenFailedUI();
+        _rigidbody.useGravity = false;
+        _rigidbody.velocity = Vector3.zero;
+        anim.SetTrigger("Stop");
+        _bFailed = true;
     }
     
     public void StartMoving() {
+        
+        PlatformManager.I._activePlatforms.Clear();
+        PlatformManager.I._bXDifferences.Clear();
+        PlatformManager.I.DecreasePlatformWidth();
+        currentPlatformIndex = 0;
+        PlatformManager.I.SpawnNextPlatform();
+        GameManager.I.EnhanceLevel();
+        UIManager.I.successUI.SetActive(false);
+        bStart = false;
         _isMoving = true;
-        anim.SetTrigger("Run");
+        _bFailed = false;
+        _bOpeningSuccessUI = false;
+        //StartCoroutine(WaitAndStartMoving());
+
+    }
+
+    IEnumerator WaitAndStartMoving() {
+        yield return new WaitForSeconds(0.5f);
+        //anim.SetTrigger("Run");
+        _isMoving = true;
+        _bFailed = false;
+        _bOpeningSuccessUI = false;
     }
 
     public void StopMoving() {
         _isMoving = false;
         _rigidbody.velocity = Vector3.zero;
         anim.SetTrigger("Dance");
+        CameraControl.I.StartCelebration();
         
     }
     

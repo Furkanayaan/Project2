@@ -11,9 +11,11 @@ public class PlatformManager : MonoBehaviour {
     public Transform initialPlatform;
     public float moveSpeed = 5f;
     public float platformLength;
+    public float platformWidth;
     public float xDiffencesBetweenPlatforms;
     public float maxXPlatformSpawnPoint;
     public float minXPlatformSpawnPoint;
+    public float needTotalPlatform;
 
     public List<Transform> _activePlatforms = new List<Transform>();
     public List<bool> _bXDifferences = new List<bool>();
@@ -23,10 +25,11 @@ public class PlatformManager : MonoBehaviour {
     private bool _bFailPlatform = false;
     private Vector3 _moveDirection;
     private bool _bFinishPlatform;
+    private float _finishPlatformXPos;
 
     void Start() {
         I = this;
-        initialPlatform.localScale = new Vector3(initialPlatform.localScale.x, initialPlatform.localScale.y, platformLength);
+        initialPlatform.localScale = new Vector3(platformWidth, initialPlatform.localScale.y, platformLength);
         _spawnPositionZ = platformLength;
         _activePlatforms.Add(initialPlatform);
         _bXDifferences.Add(false);
@@ -42,11 +45,11 @@ public class PlatformManager : MonoBehaviour {
             if (_currentMovingPlatform.position.x > maxXPlatformSpawnPoint) _moveDirection = Vector3.left;
             if(_currentMovingPlatform.position.x < -maxXPlatformSpawnPoint) _moveDirection = Vector3.right;
             
-            _currentMovingPlatform.position = currentPosition + _moveDirection * (moveSpeed + _activePlatforms.Count * 0.05f)  * Time.deltaTime;
+            _currentMovingPlatform.position = currentPosition + _moveDirection * (moveSpeed + _activePlatforms.Count * GameManager.Level/10f)  * Time.deltaTime;
             
         }
 
-        if (Input.GetMouseButtonDown(0) && _bPlatformMoving) {
+        if (Input.GetMouseButtonDown(0) && _bPlatformMoving && CharacterController.I.bStart) {
             StopPlatform();
         }
     }
@@ -62,20 +65,30 @@ public class PlatformManager : MonoBehaviour {
         float rightPos = Random.Range(minXPlatformSpawnPoint * 10f, maxXPlatformSpawnPoint * 10f) / 10f;
         float determinePos = chance == 0 ? leftPos : rightPos;
         
-        
         int randomPlatform = Random.Range(0, platformPrefab.Length);
-        bool bFinalPlatform = _activePlatforms.Count >= 15 + GameManager.Level ;
-        Vector3 spawnPosition = new Vector3(determinePos, bFinalPlatform ? 0.5f : 0f, _spawnPositionZ);
+        bool bFinalPlatform = _activePlatforms.Count >= needTotalPlatform + GameManager.Level-1 ;
+        
+        Vector3 spawnPosition = new Vector3(_activePlatforms.Count == 0 ? _finishPlatformXPos : determinePos, bFinalPlatform ? 0.5f : 0f, _spawnPositionZ);
         
         GameObject newPlatform = Instantiate(!bFinalPlatform ? platformPrefab[randomPlatform] : finishPlatformPrefab, spawnPosition, Quaternion.identity, transform);
 
         _bFinishPlatform = bFinalPlatform;
         
+        _currentMovingPlatform = newPlatform.transform;
         
+        
+
+        if (_activePlatforms.Count == 0) {
+            newPlatform.transform.localScale =
+                new Vector3(platformWidth, newPlatform.transform.localScale.y, platformLength);
+            _spawnPositionZ += newPlatform.transform.localScale.z;
+            StopPlatform();
+            return;
+        }
         
         newPlatform.transform.localScale = new Vector3(!bFinalPlatform ? initialPlatform.localScale.x : 1f, newPlatform.transform.localScale.y,
             !bFinalPlatform ? platformLength : 2f);
-        _currentMovingPlatform = newPlatform.transform;
+        
         
         _moveDirection = spawnPosition.x > initialPlatform.position.x ? Vector3.left : Vector3.right;
         _bPlatformMoving = true;
@@ -83,10 +96,16 @@ public class PlatformManager : MonoBehaviour {
         float finalPlatformOffset = platformLength / 2f + 1.8f; 
         
         //Separate values for the finish platform and normal platforms
-        _spawnPositionZ += _activePlatforms.Count + 1 < 15 + GameManager.Level
+        _spawnPositionZ += _activePlatforms.Count + 1 < needTotalPlatform + GameManager.Level-1
             ? newPlatform.transform.localScale.z
             : finalPlatformOffset;
+        
+        
 
+    }
+
+    public void DecreasePlatformWidth() {
+        platformWidth -= GameManager.Level / 10f;
     }
 
     private void StopPlatform() {
@@ -105,16 +124,21 @@ public class PlatformManager : MonoBehaviour {
         if (_bFinishPlatform) {
             _currentMovingPlatform.position = _currentMovingPlatform.position;
             _bXDifferences.Add(false);
+            SoundManager.I.PlayNoteSound(true);
+            _finishPlatformXPos = _currentMovingPlatform.position.x;
             return;
         }
         
         //Setting the position of the moving platform based on the difference in the x position between the previous stationary platform and the moving platform.
         if (Mathf.Abs(_currentMovingPlatform.position.x - initialPlatform.position.x) < xDiffencesBetweenPlatforms) {
             //Setting the moving platform exactly in front of the stationary platform.
-            _currentMovingPlatform.position =
-                new Vector3(initialPlatform.position.x, initialPlatform.position.y, initialPlatform.position.z+platformLength);
+            if (_activePlatforms.Count > 0) {
+                _currentMovingPlatform.position =
+                    new Vector3(initialPlatform.position.x, initialPlatform.position.y, initialPlatform.position.z+platformLength);
+                SoundManager.I.PlayNoteSound(true);
+            }
             _bXDifferences.Add(false);
-            SoundManager.I.PlayNoteSound(true);
+            
             return;
         }
         _bXDifferences.Add(true);
@@ -185,7 +209,7 @@ public class PlatformManager : MonoBehaviour {
         cutPlatform.transform.localScale = cutScale;
         
         cutPlatform.AddComponent<Rigidbody>();
-        Destroy(cutPlatform, 0.5f);
+        Destroy(cutPlatform, 1f);
         Destroy(_currentMovingPlatform.gameObject);
         _currentMovingPlatform = remainPlatform.transform;
         SoundManager.I.PlayNoteSound(false);

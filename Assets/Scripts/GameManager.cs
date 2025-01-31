@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour {
     public static int Level;
     void Start() {
         I = this;
+        Level = 1;
     }
 
     // Update is called once per frame
