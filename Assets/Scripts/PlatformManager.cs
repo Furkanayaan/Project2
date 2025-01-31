@@ -64,11 +64,12 @@ public class PlatformManager : MonoBehaviour {
         
         
         int randomPlatform = Random.Range(0, platformPrefab.Length);
-        bool bFinalPlatform = _activePlatforms.Count >= 15 + GameManager.Level;
+        bool bFinalPlatform = _activePlatforms.Count >= 15 + GameManager.Level ;
         Vector3 spawnPosition = new Vector3(determinePos, bFinalPlatform ? 0.5f : 0f, _spawnPositionZ);
+        
         GameObject newPlatform = Instantiate(!bFinalPlatform ? platformPrefab[randomPlatform] : finishPlatformPrefab, spawnPosition, Quaternion.identity, transform);
 
-        if (bFinalPlatform) _bFinishPlatform = true;
+        _bFinishPlatform = bFinalPlatform;
         
         
         
@@ -78,7 +79,10 @@ public class PlatformManager : MonoBehaviour {
         
         _moveDirection = spawnPosition.x > initialPlatform.position.x ? Vector3.left : Vector3.right;
         _bPlatformMoving = true;
+        
         float finalPlatformOffset = platformLength / 2f + 1.8f; 
+        
+        //Separate values for the finish platform and normal platforms
         _spawnPositionZ += _activePlatforms.Count + 1 < 15 + GameManager.Level
             ? newPlatform.transform.localScale.z
             : finalPlatformOffset;
@@ -103,6 +107,7 @@ public class PlatformManager : MonoBehaviour {
             _bXDifferences.Add(false);
             return;
         }
+        
         //Setting the position of the moving platform based on the difference in the x position between the previous stationary platform and the moving platform.
         if (Mathf.Abs(_currentMovingPlatform.position.x - initialPlatform.position.x) < xDiffencesBetweenPlatforms) {
             //Setting the moving platform exactly in front of the stationary platform.

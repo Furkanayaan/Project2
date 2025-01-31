@@ -13,6 +13,7 @@ public class CharacterController : MonoBehaviour {
     public bool characterXMovingToPlatform = false;
     private bool _bFailed;
     private Animator anim;
+    private bool _bFinished;
 
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
@@ -29,13 +30,19 @@ public class CharacterController : MonoBehaviour {
     
 
     private void Update() {
+        if (!_isMoving) {
+            CameraControl.I.StartCelebration();
+            return;
+        }
         if (transform.position.y <= -2f) {
             UIManager.I.OpenFailedUI();
             _rigidbody.useGravity = false;
+            _rigidbody.velocity = Vector3.zero;
+            anim.SetTrigger("Stop");
             _bFailed = true;
             return;
         }
-        if(!_isMoving) return;
+        
         //Increase the character's speed each time it passes a platform.
         Vector3 targetPosition = _rigidbody.position + Vector3.forward * (_forwardSpeed + currentPlatformIndex* 0.1f) * Time.deltaTime;
         float targetXPosition = 0f;
@@ -68,6 +75,7 @@ public class CharacterController : MonoBehaviour {
         _isMoving = false;
         _rigidbody.velocity = Vector3.zero;
         anim.SetTrigger("Dance");
+        
     }
     
 

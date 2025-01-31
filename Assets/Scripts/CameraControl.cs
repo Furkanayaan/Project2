@@ -1,20 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 
 public class CameraControl : MonoBehaviour {
-    private Camera _camera;
-    public Transform character;
+    public static CameraControl I;
+    public CinemachineFreeLook freeLookCamera;
+    public CinemachineVirtualCamera followCamera;
+    //The camera's rotation speed
+    public float rotationSpeed = 30f;
 
-    public float zOffset;
-    // Start is called before the first frame update
+    private bool isCelebrating = false;
+
     void Start() {
-        _camera = GetComponent<Camera>();
+        I = this;
+        //At the start, the FreeLook camera's priority is low, and the virtual camera's priority is high.
+        freeLookCamera.Priority = 0;
+        followCamera.Priority = 10;
     }
 
-    // Update is called once per frame
-    void Update() {
-        _camera.transform.position = new Vector3(_camera.transform.position.x, _camera.transform.position.y,
-            character.transform.position.z - zOffset);
+    public void StartCelebration() {
+        //The FreeLook camera is activated
+        freeLookCamera.Priority = 10;
+        //The Virtual camera is deactivated
+        followCamera.Priority = 0;  
+        //The rotation of the FreeLook camera
+        freeLookCamera.m_XAxis.Value += rotationSpeed * Time.deltaTime;
     }
 }
