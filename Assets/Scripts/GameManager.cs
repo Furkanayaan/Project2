@@ -1,33 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour {
     public static GameManager I;
-    public static int Level;
-    public static int Star;
-    public static int Diamond;
-    public static int Gold;
+    private int _level;
+    private int _star;
+    private int _diamond;
+    private int _gold;
     void Start() {
         I = this;
-        Level = 1;
+        _level = 1;
     }
 
     public  void IncreaseLevel() {
-        Level++;
+        _level++;
     }
 
     public void IncreaseStar(int count) {
-        Star += count;
+        _star += count;
     }
     
     public void IncreaseDiamond(int count) {
-        Diamond += count;
+        _diamond += count;
     }
     
     public void IncreaseGold(int count) {
-        Gold += count;
+        _gold += count;
     }
 
-    
+    public int CurrentLevel() => _level;
+    public int StarCount() => _star;
+    public int DiamondCount() => _diamond;
+    public int GoldCount() => _gold;
+
+
 }

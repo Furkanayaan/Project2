@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -113,7 +114,7 @@ public class PlatformManager : MonoBehaviour {
         if (currentPosition.x > maxXPlatformSpawnPoint) _moveDirection = Vector3.left;
         if (currentPosition.x < -maxXPlatformSpawnPoint) _moveDirection = Vector3.right;
 
-        _currentMovingPlatform.position += _moveDirection * (moveSpeed + _activePlatforms.Count * GameManager.Level / 10f) * Time.deltaTime;
+        _currentMovingPlatform.position += _moveDirection * (moveSpeed + _activePlatforms.Count * GameManager.I.CurrentLevel() / 10f) * Time.deltaTime;
     }
 
     public void SpawnNextPlatform() {
@@ -122,10 +123,10 @@ public class PlatformManager : MonoBehaviour {
         float spawnXPosition = DeterminePlatformXPosition();
         
         //Checking whether the finish platform will appear or not.
-        bool isFinalPlatform = _activePlatforms.Count >= totalRequiredPlatforms + GameManager.Level - 1;
+        bool isFinalPlatform = _activePlatforms.Count >= totalRequiredPlatforms + GameManager.I.CurrentLevel() - 1;
         
         //Checking if the next platform is the finish platform.
-        bool isNormalPlatformComing = _activePlatforms.Count + 1 < totalRequiredPlatforms + GameManager.Level - 1;
+        bool isNormalPlatformComing = _activePlatforms.Count + 1 < totalRequiredPlatforms + GameManager.I.CurrentLevel() - 1;
 
         Vector3 spawnPosition = new Vector3(
             IsFirstPlatform() ? _finishPlatformXPos : spawnXPosition,
@@ -192,7 +193,7 @@ public class PlatformManager : MonoBehaviour {
     }
 
     public void DecreasePlatformWidth() {
-        platformWidth -= GameManager.Level / 10f;
+        platformWidth -= GameManager.I.CurrentLevel() / 10f;
     }
 
     private void StopPlatformMovement() {
@@ -231,7 +232,7 @@ public class PlatformManager : MonoBehaviour {
                 //Skip this position if it is empty.
                 if(bEmpty) continue;
                 //Calculate the spawn position relative to the platform's current Z position.
-                Vector3 spawnPos = new Vector3(_currentMovingPlatform.position.x, 1f, _currentMovingPlatform.position.z + allZValue[i]);
+                Vector3 spawnPos = new Vector3(_currentMovingPlatform.position.x, 0.5f, _currentMovingPlatform.position.z + allZValue[i]);
                 //Spawn gold or star prefab based on the boolean condition.
                 Instantiate(bGold ? goldPrefab : starPrefab, spawnPos, Quaternion.identity);
             } 
@@ -245,12 +246,6 @@ public class PlatformManager : MonoBehaviour {
     }
 
     private void HandlePlatformCut() {
-        if (_bFinishPlatform) {
-            _bXDifferences.Add(false);
-            SoundManager.I.PlayNoteSound(true);
-            _finishPlatformXPos = _currentMovingPlatform.position.x;
-            return;
-        }
         //Setting the position of the moving platform based on the difference in the x position between the previous stationary platform and the moving platform.
         if (Mathf.Abs(_currentMovingPlatform.position.x - initialPlatform.position.x) < xDifferenceBetweenPlatforms) {
             if(!IsFirstPlatform()) AlignMovingPlatform();
@@ -271,13 +266,19 @@ public class PlatformManager : MonoBehaviour {
     }
 
     private void CutAndSeparatePlatforms() {
-        _bXDifferences.Add(true);
+        
         
         Vector3 remainPlatformPos, cutPlatformPos, remainScale, cutScale;
         
         
         if(!CalculatePlatformCut(out remainPlatformPos, out cutPlatformPos, out remainScale, out cutScale)) return;
-
+        if (_bFinishPlatform) {
+            _bXDifferences.Add(false);
+            SoundManager.I.PlayNoteSound(true);
+            _finishPlatformXPos = _currentMovingPlatform.position.x;
+            return;
+        }
+        _bXDifferences.Add(true);
         GameObject remainPlatform = Instantiate(_currentMovingPlatform.gameObject, remainPlatformPos, Quaternion.identity, CobjectPool.activeChild);
         remainPlatform.transform.localScale = remainScale;
 
@@ -298,7 +299,12 @@ public class PlatformManager : MonoBehaviour {
         float initialPlatformEdge = isRightSide ? initialPlatform.position.x + initialPlatform.localScale.x / 2f : initialPlatform.position.x - initialPlatform.localScale.x / 2f;
         //The value of the right or left edge midpoint of the moving platform based on the x position of the moving platform.
         float currentPlatformEdge = isRightSide ? _currentMovingPlatform.position.x - _currentMovingPlatform.localScale.x / 2f : _currentMovingPlatform.position.x + _currentMovingPlatform.localScale.x / 2f;
-
+        //If the incoming platform is the finish platform, the left edge point at the 1st child and the right edge point at the 2nd child are checked.
+        if (_bFinishPlatform) {
+            currentPlatformEdge = isRightSide
+                ? _currentMovingPlatform.GetChild(1).position.x // left edge
+                : _currentMovingPlatform.GetChild(2).position.x; // right edge
+        }
         //The position of the non-falling platform based on the x position of the moving platform.
         remainPos = new Vector3((initialPlatformEdge + currentPlatformEdge) / 2f, 0f, _currentMovingPlatform.position.z);
         //The scale vector of the non-falling platform based on the x position of the moving platform.
@@ -312,7 +318,7 @@ public class PlatformManager : MonoBehaviour {
         cutScale = new Vector3(Mathf.Abs(cutPlatformEdge - initialPlatformEdge), _currentMovingPlatform.localScale.y, _currentMovingPlatform.localScale.z);
         
         //If the left edge midpoint of the moving platform is greater than the right edge midpoint of the stationary platform.
-        if (isRightSide && currentPlatformEdge > initialPlatformEdge) {
+        if (isRightSide && (currentPlatformEdge > initialPlatformEdge) ) {
             FailPlatform();
             return false;
         }

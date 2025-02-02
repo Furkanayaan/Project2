@@ -5645,8 +5645,8 @@ MonoBehaviour:
   platformLength: 5
   platformWidth: 4
   xDifferenceBetweenPlatforms: 0.2
-  maxXPlatformSpawnPoint: 9
-  minXPlatformSpawnPoint: 7
+  maxXPlatformSpawnPoint: 8
+  minXPlatformSpawnPoint: 6
   totalRequiredPlatforms: 5
   starPrefab: {fileID: 729795403884215937, guid: f7eb11308a0e367498472d1c212fa441, type: 3}
   goldPrefab: {fileID: 8907737902176663909, guid: cca3f3d883e150140a7583edb3b599e9, type: 3}
@@ -8727,7 +8727,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1438367240}
-  m_LocalRotation: {x: 0.019662825, y: 0.1113054, z: -0.08273166, w: -0.9901414}
+  m_LocalRotation: {x: 0.019662797, y: 0.111305445, z: -0.08273171, w: -0.99014133}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

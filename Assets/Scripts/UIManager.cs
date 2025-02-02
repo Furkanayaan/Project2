@@ -28,10 +28,10 @@ public class UIManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        levelText.text = "Level: " + GameManager.Level;
-        starText.text = "x" + GameManager.Star;
-        goldText.text = "x" + GameManager.Gold;
-        diamondText.text = "x" + GameManager.Diamond;
+        levelText.text = "Level: " + GameManager.I.CurrentLevel();
+        starText.text = "x" + GameManager.I.StarCount();
+        goldText.text = "x" + GameManager.I.GoldCount();
+        diamondText.text = "x" + GameManager.I.DiamondCount();
     }
 
     public void OpenSuccessUI() {

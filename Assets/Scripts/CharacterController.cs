@@ -95,7 +95,7 @@ public class CharacterController : MonoBehaviour {
 
     private Vector3 CalculateTargetPosition() {
         //Increase the character's speed each time it passes a platform.
-        return _characterRigidbody.position + Vector3.forward * (forwardSpeed + _currentPlatformIndex * GameManager.Level / 20f) * Time.deltaTime;
+        return _characterRigidbody.position + Vector3.forward * (forwardSpeed + _currentPlatformIndex * GameManager.I.CurrentLevel() / 20f) * Time.deltaTime;
     }
 
     //Determining the midpoint for the next platform
