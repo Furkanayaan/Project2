@@ -14,11 +14,15 @@ public class CharacterController : MonoBehaviour {
     
     private Rigidbody _characterRigidbody;
     private Animator _animator;
+    //The number of platforms passed.
     private int _currentPlatformIndex = 0;
+    //Checks whether the character has fallen or not
     private bool _bFailed;
+    //Checks whether the character has reached the finish point
     private bool _bFinished;
+    //Checks whether the Success UI is open or not.
     private bool _bSuccessUIOpening = false;
-    private bool _bMoving = true;
+    //The value that measures the time during the celebration.
     private float _celebrationTimer;
     
 
@@ -36,12 +40,12 @@ public class CharacterController : MonoBehaviour {
     private void Update() {
         HandleGameStart();
         if (!bStarted) return;
-        if (!_bMoving) HandleSuccessUI();
+        if (_bFinished) HandleSuccessUI();
         else MoveCharacter();
     }
 
     private void InitializeCharacterPosition() {
-        ////The position of the character relative to the size of the first platform.
+        //The position of the character relative to the size of the first platform.
         transform.position = new Vector3(
             transform.position.x,
             transform.position.y,
@@ -64,6 +68,7 @@ public class CharacterController : MonoBehaviour {
         }
     }
 
+    //The function where SuccessUI opens.
     private void HandleSuccessUI() {
         if (!_bSuccessUIOpening) {
             _celebrationTimer += Time.deltaTime;
@@ -77,7 +82,7 @@ public class CharacterController : MonoBehaviour {
     }
 
     private void MoveCharacter() {
-        if (_bFailed || !_bMoving) return;
+        if (_bFailed || _bFinished) return;
 
         Vector3 targetPosition = CalculateTargetPosition();
         float targetXPosition = DetermineTargetXPosition();
@@ -119,6 +124,7 @@ public class CharacterController : MonoBehaviour {
         }
     }
 
+    //If the character has started falling.
     private void TriggerFailState() {
         UIManager.I.OpenFailedUI();
         _characterRigidbody.useGravity = false;
@@ -136,13 +142,14 @@ public class CharacterController : MonoBehaviour {
         UIManager.I.HideSuccessUI();
         _animator.SetTrigger("Run");
 
-        _bMoving = true;
+        _bFinished = false;
         _bFailed = false;
         _bSuccessUIOpening = false;
     }
 
+    //If the character has reached the finish point.
     public void StopMovement() {
-        _bMoving = false;
+        _bFinished = true;
         _characterRigidbody.velocity = Vector3.zero;
         _animator.SetTrigger("Dance");
         CameraControl.I.StartCelebration();

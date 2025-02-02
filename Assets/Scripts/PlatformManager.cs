@@ -12,27 +12,39 @@ public class PlatformManager : MonoBehaviour {
     public float moveSpeed = 5f;
     public float platformLength;
     public float platformWidth;
+    //The maximum x-distance for perfect timing between the stationary and moving platforms.
     public float xDifferenceBetweenPlatforms;
+    //The platform value that can be generated at the max X position.
     public float maxXPlatformSpawnPoint;
+    //The platform value that can be generated at the min X position.
     public float minXPlatformSpawnPoint;
+    //The number of platforms to be generated until the finish platform.
     public float totalRequiredPlatforms;
 
+    //Platforms present in the scene.
     private List<Transform> _activePlatforms = new List<Transform>();
     //It checks if there is an x difference between the moving platform and the previous platform.
     private List<bool> _bXDifferences = new List<bool>();
+    //The z-distance between platforms.
     private float _spawnPositionZ = 7.5f;
     private bool _bPlatformMoving = false;
+    //Moving platform
     private Transform _currentMovingPlatform;
+    //Checks whether the entire platform has fallen down
     private bool _bFailPlatform = false;
+    //Determines whether the platform to be generated will move to the right or to the left.
     private Vector3 _moveDirection;
+    //Checks whether the finish platform has appeared.
     private bool _bFinishPlatform;
+    //The x-position of the finish platform.
     private float _finishPlatformXPos;
+    //The list holding the platforms to be deactivated.
     private List<Transform> _deactivePlatforms = new List<Transform>();
     
     //The class where we activate the platforms we need and deactivate those we don't.
     [Serializable]
     public class ObjectPool {
-        public GameObject[] pLatformPrefabs;
+        public GameObject[] platformPrefabs;
         public GameObject finishPlatformPrefab;
         public Transform activeChild;
         public Transform activeFinishChild;
@@ -43,8 +55,8 @@ public class PlatformManager : MonoBehaviour {
         //A function that allows us to fetch an platform from the deactivated parent.
         public Transform GetPooledObject(bool isFinish) {
             if ((!isFinish && deactiveChild.childCount <= 0) || (isFinish && deactiveFinishChild.childCount <= 0)) {
-                int randomPlatform = Random.Range(0, pLatformPrefabs.Length);
-                Instantiate(isFinish ? finishPlatformPrefab : pLatformPrefabs[randomPlatform], Vector3.zero, Quaternion.identity, isFinish ? deactiveFinishChild : deactiveChild);
+                int randomPlatform = Random.Range(0, platformPrefabs.Length);
+                Instantiate(isFinish ? finishPlatformPrefab : platformPrefabs[randomPlatform], Vector3.zero, Quaternion.identity, isFinish ? deactiveFinishChild : deactiveChild);
                 return GetPooledObject(isFinish);
             }
             
@@ -83,6 +95,7 @@ public class PlatformManager : MonoBehaviour {
         }
     }
 
+    //The initialize of the first platform.
     private void InitializePlatform() {
         initialPlatform.localScale = new Vector3(platformWidth, initialPlatform.localScale.y, platformLength);
         _spawnPositionZ = platformLength;
@@ -103,7 +116,11 @@ public class PlatformManager : MonoBehaviour {
         if (_bFailPlatform) return;
 
         float spawnXPosition = DeterminePlatformXPosition();
+        
+        //Checking whether the finish platform will appear or not.
         bool isFinalPlatform = _activePlatforms.Count >= totalRequiredPlatforms + GameManager.Level - 1;
+        
+        //Checking if the next platform is the finish platform.
         bool isNormalPlatformComing = _activePlatforms.Count + 1 < totalRequiredPlatforms + GameManager.Level - 1;
 
         Vector3 spawnPosition = new Vector3(
@@ -125,6 +142,7 @@ public class PlatformManager : MonoBehaviour {
         
     }
     
+    //Determining the x-position of the platform to be spawned.
     private float DeterminePlatformXPosition() {
         int chance = Random.Range(0, 2);
         //The possible value range if the moving platform will be positioned to the left of the stationary platform.

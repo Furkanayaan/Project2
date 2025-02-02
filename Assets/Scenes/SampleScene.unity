@@ -4946,7 +4946,7 @@ MonoBehaviour:
   minXPlatformSpawnPoint: 7
   totalRequiredPlatforms: 5
   CobjectPool:
-    pLatformPrefabs:
+    platformPrefabs:
     - {fileID: 7408928888097035622, guid: 00b738118b35370489009f95a6c1bc86, type: 3}
     - {fileID: 1839072302911156994, guid: 54d6c9b3cb45e604185f68fe02c3892b, type: 3}
     - {fileID: 7582279652078896919, guid: abdd86fdd6efca44d9a56fcc4d9d6da1, type: 3}
@@ -7712,7 +7712,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1438367240}
-  m_LocalRotation: {x: 0.019662797, y: 0.111305445, z: -0.08273171, w: -0.99014133}
+  m_LocalRotation: {x: 0.019662825, y: 0.1113054, z: -0.08273166, w: -0.9901414}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -9084,37 +9084,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1626897899}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1633921681
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1633921682}
-  m_Layer: 0
-  m_Name: PlatformPooling
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1633921682
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1633921681}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.6497688, y: 2.491698, z: 30.970924}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 11
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1643019657
 GameObject:
   m_ObjectHideFlags: 0
