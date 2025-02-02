@@ -2,14 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SoundManager : MonoBehaviour {
     public static SoundManager I;
     [Serializable]
     public struct SSounds {
-        public string SoundName;
-        public AudioClip Clip;
-    } public List<SSounds> Sounds;
+        public string soundName;
+        public AudioClip clip;
+    }public List<SSounds> sounds;
     
     
     private Dictionary<Transform, AudioSource> _audioSources = new();
@@ -27,8 +28,8 @@ public class SoundManager : MonoBehaviour {
             _audioSources.Add(_playingParent.GetChild(i), _playingParent.GetChild(i).GetComponent<AudioSource>());
         }
 
-        for (int i = 0; i < Sounds.Count; i++) {
-            _audioClips.Add(Sounds[i].SoundName, Sounds[i].Clip);
+        for (int i = 0; i < sounds.Count; i++) {
+            _audioClips.Add(sounds[i].soundName, sounds[i].clip);
         }
     }
 

@@ -78,7 +78,7 @@ public class PlatformManager : MonoBehaviour {
             MovePlatform();
         }
 
-        if (Input.GetMouseButtonDown(0) && _bPlatformMoving && CharacterController.I.hasStarted) {
+        if (Input.GetMouseButtonDown(0) && _bPlatformMoving && CharacterController.I.bStarted) {
             StopPlatformMovement();
         }
     }
@@ -271,7 +271,6 @@ public class PlatformManager : MonoBehaviour {
     //The moving platform falls straight down.
     private void FailPlatform() {
         _currentMovingPlatform.gameObject.AddComponent<Rigidbody>();
-        Debug.Log("Fail");
         _bFailPlatform = true;
     }
 
@@ -298,10 +297,7 @@ public class PlatformManager : MonoBehaviour {
     public void DeActivePlatforms() {
         _deactivePlatforms.Clear();
         for (int i = 0; i < _activePlatforms.Count; i++) {
-            if (!_deactivePlatforms.Contains(_activePlatforms[i])) {
-                _deactivePlatforms.Add(_activePlatforms[i]);
-                Debug.Log(_activePlatforms[i]);
-            }
+            if (!_deactivePlatforms.Contains(_activePlatforms[i])) _deactivePlatforms.Add(_activePlatforms[i]);
         }
     }
 }

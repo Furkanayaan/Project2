@@ -4937,27 +4937,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e0136811161d064eb6ee10ba212057c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  platformPrefabs:
-  - {fileID: 7408928888097035622, guid: 00b738118b35370489009f95a6c1bc86, type: 3}
-  - {fileID: 1839072302911156994, guid: 54d6c9b3cb45e604185f68fe02c3892b, type: 3}
-  - {fileID: 7582279652078896919, guid: abdd86fdd6efca44d9a56fcc4d9d6da1, type: 3}
-  - {fileID: 4418829151689741211, guid: d53073f498a08e4419438d2234b64bbf, type: 3}
-  - {fileID: 4244080335764045393, guid: f3e2fadbf729cbe439d7172e5e3940d8, type: 3}
-  - {fileID: 5799092736911818340, guid: 33921a3b42de6a9418b90bf074ef826e, type: 3}
-  - {fileID: 3326266926657416916, guid: 6d0261f55071a024580dca06c4621b4f, type: 3}
-  - {fileID: 3202702847873605570, guid: f925dcc36ce34e74ab8c3122cee60210, type: 3}
-  - {fileID: 4038661397232778054, guid: cb16d48a34d1c2b4c939ede0fdaea377, type: 3}
-  - {fileID: 5975510476391405727, guid: bd44804e860e5594287286d392168cc8, type: 3}
-  - {fileID: 2282823989293472682, guid: cc286f124c821dc48a3db020ed27aaca, type: 3}
-  - {fileID: 4849915045273217012, guid: 4926e76e71e8b4a4f87d9811b137bf41, type: 3}
-  - {fileID: 7636743670355011149, guid: 574bed9e25d04d549b088d36482daf82, type: 3}
-  - {fileID: 6678789419170429994, guid: f9f2ca78a51c83745b3f55391a38237c, type: 3}
-  - {fileID: 2908404186081516682, guid: 824194e020305324e875363a204b61d5, type: 3}
-  - {fileID: 4875048413266644447, guid: c0ff9cb9ef48ede44b5694e9fdf095d6, type: 3}
-  - {fileID: 3968380382795823420, guid: bf51a93edfd06d9478ceef4e76909331, type: 3}
-  - {fileID: 4148653801574380971, guid: 3c29ebd61b7dadf4084ef8da469805a6, type: 3}
-  - {fileID: 2139678910658675977, guid: 51e6ad064c4b2904eae202a27c767977, type: 3}
-  finishPlatformPrefab: {fileID: 5795257273154974688, guid: 5bce10f682acc0e40b5b14fc5067cff5, type: 3}
   initialPlatform: {fileID: 255588663}
   moveSpeed: 5
   platformLength: 5
@@ -4966,8 +4945,6 @@ MonoBehaviour:
   maxXPlatformSpawnPoint: 9
   minXPlatformSpawnPoint: 7
   totalRequiredPlatforms: 5
-  _activePlatforms: []
-  _deactivePlatforms: []
   CobjectPool:
     pLatformPrefabs:
     - {fileID: 7408928888097035622, guid: 00b738118b35370489009f95a6c1bc86, type: 3}
@@ -11781,9 +11758,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a81330896890a74f818d2d2b50b3699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Sounds:
-  - SoundName: Note
-    Clip: {fileID: 8300000, guid: 5d706af4bf34b5d40b805a8d35a4e9f5, type: 3}
+  sounds:
+  - soundName: Note
+    clip: {fileID: 8300000, guid: 5d706af4bf34b5d40b805a8d35a4e9f5, type: 3}
 --- !u!1 &2075629206
 GameObject:
   m_ObjectHideFlags: 0
@@ -12762,11 +12739,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1b5df2592d1bbc418397351f9568cd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forwardSpeed: 2.3
-  currentPlatformIndex: 0
-  hasStarted: 0
-  celebrationTimer: 0
   tapToStart: {fileID: 685946259}
+  forwardSpeed: 2.3
+  bStarted: 0
 --- !u!54 &5551014133744016557
 Rigidbody:
   m_ObjectHideFlags: 0

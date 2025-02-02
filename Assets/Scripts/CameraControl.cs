@@ -12,7 +12,7 @@ public class CameraControl : MonoBehaviour {
     //The camera's rotation speed
     public float rotationSpeed = 30f;
 
-    private bool isCelebrating = false;
+    private bool _bCelebrating = false;
 
     void Start() {
         I = this;
@@ -22,7 +22,7 @@ public class CameraControl : MonoBehaviour {
     }
 
     private void Update() {
-        if (isCelebrating) {
+        if (_bCelebrating) {
             ////The rotation of the FreeLook camera
             freeLookCamera.m_XAxis.Value += rotationSpeed * Time.deltaTime;
         }
@@ -32,7 +32,7 @@ public class CameraControl : MonoBehaviour {
     }
 
     public void StartCelebration() {
-        isCelebrating = true;
+        _bCelebrating = true;
         //The FreeLook camera is activated
         freeLookCamera.Priority = 10;
         //The Virtual camera is deactivated
@@ -42,7 +42,7 @@ public class CameraControl : MonoBehaviour {
     
 
     public void StopCelebration() {
-        isCelebrating = false;
+        _bCelebrating = false;
         //The FreeLook camera is deactivated
         freeLookCamera.Priority = 0;
         //The Virtual camera is activated
