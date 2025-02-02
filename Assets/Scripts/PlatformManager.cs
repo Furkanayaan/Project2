@@ -1,13 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class PlatformManager : MonoBehaviour {
     public static PlatformManager I;
-    public GameObject[] platformPrefabs;
-    public GameObject finishPlatformPrefab;
     public Transform initialPlatform;
     public float moveSpeed = 5f;
     public float platformLength;
@@ -17,9 +17,9 @@ public class PlatformManager : MonoBehaviour {
     public float minXPlatformSpawnPoint;
     public float totalRequiredPlatforms;
 
-    public List<Transform> activePlatforms = new List<Transform>();
+    private List<Transform> _activePlatforms = new List<Transform>();
     //It checks if there is an x difference between the moving platform and the previous platform.
-    public List<bool> bXDifferences = new List<bool>();
+    private List<bool> _bXDifferences = new List<bool>();
     private float _spawnPositionZ = 7.5f;
     private bool _bPlatformMoving = false;
     private Transform _currentMovingPlatform;
@@ -27,6 +27,44 @@ public class PlatformManager : MonoBehaviour {
     private Vector3 _moveDirection;
     private bool _bFinishPlatform;
     private float _finishPlatformXPos;
+    private List<Transform> _deactivePlatforms = new List<Transform>();
+    
+    //The class where we activate the platforms we need and deactivate those we don't.
+    [Serializable]
+    public class ObjectPool {
+        public GameObject[] pLatformPrefabs;
+        public GameObject finishPlatformPrefab;
+        public Transform activeChild;
+        public Transform activeFinishChild;
+        public Transform deactiveChild;
+        public Transform deactiveFinishChild;
+
+        
+        //A function that allows us to fetch an platform from the deactivated parent.
+        public Transform GetPooledObject(bool isFinish) {
+            if ((!isFinish && deactiveChild.childCount <= 0) || (isFinish && deactiveFinishChild.childCount <= 0)) {
+                int randomPlatform = Random.Range(0, pLatformPrefabs.Length);
+                Instantiate(isFinish ? finishPlatformPrefab : pLatformPrefabs[randomPlatform], Vector3.zero, Quaternion.identity, isFinish ? deactiveFinishChild : deactiveChild);
+                return GetPooledObject(isFinish);
+            }
+            
+            Transform obj = isFinish ? deactiveFinishChild.GetChild(0) : deactiveChild.GetChild(0);
+            
+            obj.transform.SetParent(isFinish ? activeFinishChild.transform  : activeChild.transform);
+            return obj;
+        }
+        //The function where we assign the platform as a child of the deactivated parent and deactivate it
+        public void ReturnToPool(GameObject obj) {
+            
+            if (!obj.CompareTag("FinishPlatform")) obj.transform.SetParent(deactiveChild.transform);
+            
+            else obj.transform.SetParent(deactiveFinishChild.transform);
+            
+            
+        }
+    }
+
+    public ObjectPool CobjectPool = new();
 
     private void Start() {
         I = this;
@@ -48,8 +86,8 @@ public class PlatformManager : MonoBehaviour {
     private void InitializePlatform() {
         initialPlatform.localScale = new Vector3(platformWidth, initialPlatform.localScale.y, platformLength);
         _spawnPositionZ = platformLength;
-        activePlatforms.Add(initialPlatform);
-        bXDifferences.Add(false);
+        _activePlatforms.Add(initialPlatform);
+        _bXDifferences.Add(false);
     }
 
     private void MovePlatform() {
@@ -58,31 +96,26 @@ public class PlatformManager : MonoBehaviour {
         if (currentPosition.x > maxXPlatformSpawnPoint) _moveDirection = Vector3.left;
         if (currentPosition.x < -maxXPlatformSpawnPoint) _moveDirection = Vector3.right;
 
-        _currentMovingPlatform.position += _moveDirection * (moveSpeed + activePlatforms.Count * GameManager.Level / 10f) * Time.deltaTime;
+        _currentMovingPlatform.position += _moveDirection * (moveSpeed + _activePlatforms.Count * GameManager.Level / 10f) * Time.deltaTime;
     }
 
     public void SpawnNextPlatform() {
         if (_bFailPlatform) return;
 
         float spawnXPosition = DeterminePlatformXPosition();
-        bool isFinalPlatform = activePlatforms.Count >= totalRequiredPlatforms + GameManager.Level - 1;
-        bool isNormalPlatformComing = activePlatforms.Count + 1 < totalRequiredPlatforms + GameManager.Level - 1;
+        bool isFinalPlatform = _activePlatforms.Count >= totalRequiredPlatforms + GameManager.Level - 1;
+        bool isNormalPlatformComing = _activePlatforms.Count + 1 < totalRequiredPlatforms + GameManager.Level - 1;
 
         Vector3 spawnPosition = new Vector3(
             IsFirstPlatform() ? _finishPlatformXPos : spawnXPosition,
             isFinalPlatform ? 0.5f : 0f,
             _spawnPositionZ
         );
-
-        GameObject newPlatform = Instantiate(
-            isFinalPlatform ? finishPlatformPrefab : platformPrefabs[Random.Range(0, platformPrefabs.Length)],
-            spawnPosition,
-            Quaternion.identity,
-            transform
-        );
+        Transform newPlatform = CobjectPool.GetPooledObject(isFinalPlatform);
+        newPlatform.position = spawnPosition;
 
         _bFinishPlatform = isFinalPlatform;
-        _currentMovingPlatform = newPlatform.transform;
+        _currentMovingPlatform = newPlatform;
         
         if (IsFirstPlatform()) 
             InitializeFirstPlatform(newPlatform);
@@ -102,36 +135,36 @@ public class PlatformManager : MonoBehaviour {
     }
 
     //For the first platform after the level is completed
-    private void InitializeFirstPlatform(GameObject platform) {
+    private void InitializeFirstPlatform(Transform platform) {
         SetPlatformScale(platform, platformWidth, platformLength);
         UpdateNextSpawnPosition(platform, true);
         StopPlatformMovement();
     }
 
-    private void ConfigurePlatform(GameObject platform, bool isFinalPlatform, bool isNormalPlatformComing) {
+    private void ConfigurePlatform(Transform platform, bool isFinalPlatform, bool isNormalPlatformComing) {
         float width = isFinalPlatform ? 1f : initialPlatform.localScale.x;
         float length = isFinalPlatform ? 2f : platformLength;
 
         SetPlatformScale(platform, width, length);
 
-        _moveDirection = platform.transform.position.x > initialPlatform.position.x ? Vector3.left : Vector3.right;
+        _moveDirection = platform.position.x > initialPlatform.position.x ? Vector3.left : Vector3.right;
         _bPlatformMoving = true;
         
         UpdateNextSpawnPosition(platform, false, isNormalPlatformComing);
     }
 
-    private void SetPlatformScale(GameObject platform, float width, float length) {
-        platform.transform.localScale = new Vector3(width, platform.transform.localScale.y, length);
+    private void SetPlatformScale(Transform platform, float width, float length) {
+        platform.localScale = new Vector3(width, platform.localScale.y, length);
     }
 
-    private void UpdateNextSpawnPosition(GameObject platform, bool isFirstPlatform, bool isNormalPlatformComing = false) {
+    private void UpdateNextSpawnPosition(Transform platform, bool isFirstPlatform, bool isNormalPlatformComing = false) {
         float offset = 0;
         if (isFirstPlatform) {
-            offset = platform.transform.localScale.z;
+            offset = platform.localScale.z;
         }
         else {
             //Separate values for the finish platform and normal platforms
-            offset = isNormalPlatformComing ? platform.transform.localScale.z : platformLength / 2f + 1.8f;
+            offset = isNormalPlatformComing ? platform.localScale.z : platformLength / 2f + 1.8f;
         }
         _spawnPositionZ += offset;
     }
@@ -146,7 +179,7 @@ public class PlatformManager : MonoBehaviour {
 
         //It checks whether the platform has failed or not.
         if (!_bFailPlatform) {
-            activePlatforms.Add(_currentMovingPlatform);
+            _activePlatforms.Add(_currentMovingPlatform);
             initialPlatform = _currentMovingPlatform;
         }
 
@@ -156,7 +189,7 @@ public class PlatformManager : MonoBehaviour {
 
     private void HandlePlatformCut() {
         if (_bFinishPlatform) {
-            bXDifferences.Add(false);
+            _bXDifferences.Add(false);
             SoundManager.I.PlayNoteSound(true);
             _finishPlatformXPos = _currentMovingPlatform.position.x;
             return;
@@ -164,7 +197,7 @@ public class PlatformManager : MonoBehaviour {
         //Setting the position of the moving platform based on the difference in the x position between the previous stationary platform and the moving platform.
         if (Mathf.Abs(_currentMovingPlatform.position.x - initialPlatform.position.x) < xDifferenceBetweenPlatforms) {
             if(!IsFirstPlatform()) AlignMovingPlatform();
-            bXDifferences.Add(false);
+            _bXDifferences.Add(false);
             return;
         }
         CutAndSeparatePlatforms();
@@ -181,14 +214,14 @@ public class PlatformManager : MonoBehaviour {
     }
 
     private void CutAndSeparatePlatforms() {
-        bXDifferences.Add(true);
+        _bXDifferences.Add(true);
         
-        Vector3 remainPlatformPos, cutPlatformPos;
-        Vector3 remainScale, cutScale;
+        Vector3 remainPlatformPos, cutPlatformPos, remainScale, cutScale;
+        
         
         if(!CalculatePlatformCut(out remainPlatformPos, out cutPlatformPos, out remainScale, out cutScale)) return;
 
-        GameObject remainPlatform = Instantiate(_currentMovingPlatform.gameObject, remainPlatformPos, Quaternion.identity, transform);
+        GameObject remainPlatform = Instantiate(_currentMovingPlatform.gameObject, remainPlatformPos, Quaternion.identity, CobjectPool.activeChild);
         remainPlatform.transform.localScale = remainScale;
 
         GameObject cutPlatform = Instantiate(_currentMovingPlatform.gameObject, cutPlatformPos, Quaternion.identity, transform);
@@ -242,18 +275,34 @@ public class PlatformManager : MonoBehaviour {
         _bFailPlatform = true;
     }
 
-    public Transform GetCurrentPlatform(int index) => index >= activePlatforms.Count ? null : activePlatforms[index];
+    public Transform GetCurrentPlatform(int index) => index >= _activePlatforms.Count ? null : _activePlatforms[index];
 
-    public Transform GetNextPlatform(int index) => index + 1 >= activePlatforms.Count ? null : activePlatforms[index + 1];
+    public Transform GetNextPlatform(int index) => index + 1 >= _activePlatforms.Count ? null : _activePlatforms[index + 1];
 
-    public bool IsXDifferent(int index) => index + 1 < bXDifferences.Count && bXDifferences[index + 1];
+    public bool IsXDifferent(int index) => index + 1 < _bXDifferences.Count && _bXDifferences[index + 1];
 
-    public bool IsFirstPlatform() => activePlatforms.Count == 0;
+    public bool IsFirstPlatform() => _activePlatforms.Count == 0;
     
     public void ResetPlatforms() {
-        activePlatforms.Clear();
-        bXDifferences.Clear();
+        //The platforms from 2 levels ago are deactivated.
+        for (int i = 0; i < _deactivePlatforms.Count; i++) {
+            CobjectPool.ReturnToPool(_deactivePlatforms[i].gameObject);
+        }
+        DeActivePlatforms();
+        _activePlatforms.Clear();
+        _bXDifferences.Clear();
         DecreasePlatformWidth();
+    }
+
+    //The function that adds currently active but future-unused platforms to the list.
+    public void DeActivePlatforms() {
+        _deactivePlatforms.Clear();
+        for (int i = 0; i < _activePlatforms.Count; i++) {
+            if (!_deactivePlatforms.Contains(_activePlatforms[i])) {
+                _deactivePlatforms.Add(_activePlatforms[i]);
+                Debug.Log(_activePlatforms[i]);
+            }
+        }
     }
 }
 
