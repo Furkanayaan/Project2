@@ -23,13 +23,17 @@ public class UIManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        level.text = "Level: " + GameManager.Level.ToString();
+        level.text = "Level: " + GameManager.Level;
     }
 
     public void OpenSuccessUI() {
         successButton.onClick.RemoveAllListeners();
-        successButton.onClick.AddListener(CharacterController.I.StartMoving);
+        successButton.onClick.AddListener(CharacterController.I.RestartMovement);
         successUI.SetActive(true);
+    }
+
+    public void HideSuccessUI() {
+        successUI.SetActive(false);
     }
     
     public void OpenFailedUI() {

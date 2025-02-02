@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour {
         
     }
 
-    public  void EnhanceLevel() {
+    public  void IncreaseLevel() {
         Level++;
     }
 }
