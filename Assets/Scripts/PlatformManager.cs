@@ -21,6 +21,10 @@ public class PlatformManager : MonoBehaviour {
     //The number of platforms to be generated until the finish platform.
     public float totalRequiredPlatforms;
 
+    public GameObject starPrefab;
+    public GameObject goldPrefab;
+    public GameObject diamondPrefab;
+
     //Platforms present in the scene.
     private List<Transform> _activePlatforms = new List<Transform>();
     //It checks if there is an x difference between the moving platform and the previous platform.
@@ -194,15 +198,50 @@ public class PlatformManager : MonoBehaviour {
     private void StopPlatformMovement() {
         _bPlatformMoving = false;
         HandlePlatformCut();
-
         //It checks whether the platform has failed or not.
-        if (!_bFailPlatform) {
-            _activePlatforms.Add(_currentMovingPlatform);
-            initialPlatform = _currentMovingPlatform;
-        }
-
+        if(_bFailPlatform) return;
+        
+        _activePlatforms.Add(_currentMovingPlatform);
+        initialPlatform = _currentMovingPlatform;
+        
         //It checks whether the finish platform has arrived or not.
-        if (!_bFinishPlatform) SpawnNextPlatform();
+        SpawnCurrencies(_bFinishPlatform);
+    }
+
+    public void SpawnCurrencies(bool bDiamond) {
+        if (!bDiamond) {
+            //The size of the platform along the Z-axis is rounded down if it is a float.
+            int platformHalfScale = Mathf.FloorToInt(_currentMovingPlatform.localScale.z/2f);
+            //Determine the maximum Z position offset.
+            int maxZpos = platformHalfScale - 1;
+            //Create a list to store all possible Z positions.
+            List<int> allZValue = new();
+            for (int i = -maxZpos; i <= maxZpos; i++) {
+                //Add each Z position within the range to the list.
+                allZValue.Add(i);
+            }
+            
+            for (int i = 0; i < allZValue.Count; i++) {
+                //Randomly determine what to spawn (gold, star, or nothing).
+                int determineWhichCurrency = Random.Range(1, 4);
+                //Spawn gold if divisible by 3.
+                bool bGold = determineWhichCurrency % 3 == 0;
+                //Leave empty if remainder is 2.
+                bool bEmpty = determineWhichCurrency % 3 == 2;
+                //Skip this position if it is empty.
+                if(bEmpty) continue;
+                //Calculate the spawn position relative to the platform's current Z position.
+                Vector3 spawnPos = new Vector3(_currentMovingPlatform.position.x, 1f, _currentMovingPlatform.position.z + allZValue[i]);
+                //Spawn gold or star prefab based on the boolean condition.
+                Instantiate(bGold ? goldPrefab : starPrefab, spawnPos, Quaternion.identity);
+            } 
+            
+            SpawnNextPlatform();
+        }
+        else 
+            Instantiate(diamondPrefab, _currentMovingPlatform.position, Quaternion.identity);
+        
+        
     }
 
     private void HandlePlatformCut() {

@@ -10,10 +10,15 @@ public class UIManager : MonoBehaviour {
     public GameObject successUI;
     public Button successButton;
     public GameObject failedUI;
-
     public Button failButton;
+    public TMP_Text levelText;
+    public TMP_Text starText;
+    public TMP_Text goldText;
+    public TMP_Text diamondText;
 
-    public TMP_Text level;
+    public Transform toTheStarUI;
+    public Transform toTheGoldUI;
+    public Transform toTheDiamondUI;
     // Start is called before the first frame update
     void Start() {
         I = this;
@@ -23,7 +28,10 @@ public class UIManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        level.text = "Level: " + GameManager.Level;
+        levelText.text = "Level: " + GameManager.Level;
+        starText.text = "x" + GameManager.Star;
+        goldText.text = "x" + GameManager.Gold;
+        diamondText.text = "x" + GameManager.Diamond;
     }
 
     public void OpenSuccessUI() {
@@ -42,6 +50,21 @@ public class UIManager : MonoBehaviour {
 
     public void ClickFailedButton() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    
+    //Function that makes the star currency move to the UI.
+    public void StarPoolToGo(int quantity, Vector3 currentPos) {
+        CurrencyPool.I.CurrencyAllocation(quantity, CurrencyPool.PoolType.Star, toTheStarUI, currentPos);
+    }
+    
+    //Function that makes the gold currency move to the UI
+    public void GoldPoolToGo(int quantity, Vector3 currentPos) {
+        CurrencyPool.I.CurrencyAllocation(quantity, CurrencyPool.PoolType.Gold, toTheGoldUI, currentPos);
+    }
+    
+    //Function that makes the diamond currency move to the UI
+    public void DiamondPoolToGo(int quantity, Vector3 currentPos) {
+        CurrencyPool.I.CurrencyAllocation(quantity, CurrencyPool.PoolType.Diamond, toTheDiamondUI, currentPos);
     }
     
 }

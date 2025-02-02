@@ -11,6 +11,9 @@ public class CharacterController : MonoBehaviour {
     public GameObject tapToStart;
     public float forwardSpeed = 5f;
     public bool bStarted = false;
+    public GameObject goldParticle;
+    public GameObject starParticle;
+    public GameObject diamondParticle;
     
     private Rigidbody _characterRigidbody;
     private Animator _animator;
@@ -98,14 +101,15 @@ public class CharacterController : MonoBehaviour {
     //Determining the midpoint for the next platform
     private float DetermineTargetXPosition() {
         Transform currentPlatform = PlatformManager.I.GetCurrentPlatform(_currentPlatformIndex);
-
-        if (currentPlatform != null && currentPlatform.CompareTag("FinishPlatform")) {
-            return currentPlatform.position.x;
-        }
-
         Transform nextPlatform = PlatformManager.I.GetNextPlatform(_currentPlatformIndex);
-        if (nextPlatform != null && PlatformManager.I.IsXDifferent(_currentPlatformIndex)) {
-            return nextPlatform.position.x;
+
+        if (currentPlatform != null) {
+            //If the platform the character is currently on is the finish platform.
+            if(currentPlatform.CompareTag("FinishPlatform")) return currentPlatform.position.x;
+            //If a platform has not been spawned in front of the platform the character is currently on.
+            if (nextPlatform == null) return currentPlatform.position.x;
+            //If a platform has been spawned in front of the platform the character is currently on, and its x value is different.
+            if(PlatformManager.I.IsXDifferent(_currentPlatformIndex)) return nextPlatform.position.x;
         }
 
         return _characterRigidbody.position.x;
@@ -162,6 +166,27 @@ public class CharacterController : MonoBehaviour {
 
         if (other.CompareTag("FinishPoint")) {
             StopMovement();
+        }
+
+        if (other.CompareTag("Star")) {
+            UIManager.I.StarPoolToGo(1, transform.position);
+            GameObject particle = Instantiate(starParticle, other.transform.position, Quaternion.identity);
+            Destroy(other.gameObject);
+            Destroy(particle, 0.5f);
+        }
+        
+        if (other.CompareTag("Coin")) {
+            UIManager.I.GoldPoolToGo(1, transform.position);
+            GameObject particle = Instantiate(goldParticle, other.transform.position, Quaternion.identity);
+            Destroy(other.gameObject);
+            Destroy(particle, 0.5f);
+        }
+        
+        if (other.CompareTag("Diamond")) {
+            UIManager.I.DiamondPoolToGo(1, transform.position);
+            GameObject particle = Instantiate(diamondParticle, other.transform.position, Quaternion.identity);
+            Destroy(other.gameObject);
+            Destroy(particle, 0.5f);
         }
     }
 

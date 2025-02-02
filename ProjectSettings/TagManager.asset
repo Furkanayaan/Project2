@@ -9,6 +9,9 @@ TagManager:
   - FinalPoint
   - FinishPoint
   - FinishPlatform
+  - Coin
+  - Diamond
+  - Star
   layers:
   - Default
   - TransparentFX
