@@ -118,7 +118,8 @@ public class CharacterController : MonoBehaviour {
     //Smooth transition based on X position
     private void SmoothMoveToTarget(Vector3 targetPosition, float targetXPosition) {
         float smoothedX = Mathf.Lerp(_characterRigidbody.position.x, targetXPosition, Time.deltaTime * 5f);
-        _characterRigidbody.MovePosition(new Vector3(smoothedX, _characterRigidbody.position.y, targetPosition.z));
+        Vector3 smoothedPosition = new Vector3(smoothedX, _characterRigidbody.position.y, targetPosition.z);
+        _characterRigidbody.MovePosition(smoothedPosition);
     }
 
     //The falling of the character
